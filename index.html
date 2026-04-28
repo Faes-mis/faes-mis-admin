@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAES MIS - Admin Dashboard</title>
+    <title>FAES MIS - Admin Portal</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0"></script>
     <style>
         * {
@@ -14,28 +14,161 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            min-height: 100vh;
             color: #333;
         }
 
-        .container {
+        /* LOGIN PAGE */
+        .login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #1b5e20;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #2e7d32;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 18px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+        }
+
+        .error-message {
+            background: #fdecea;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2e7d32;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* DASHBOARD */
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
             display: flex;
             min-height: 100vh;
         }
 
-        /* SIDEBAR */
         .sidebar {
             width: 250px;
             background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
             color: white;
             padding: 20px;
+            overflow-y: auto;
             position: fixed;
             height: 100vh;
-            overflow-y: auto;
         }
 
         .sidebar h2 {
-            font-size: 20px;
+            font-size: 18px;
             margin-bottom: 30px;
             text-align: center;
         }
@@ -77,11 +210,11 @@
             font-weight: 600;
         }
 
-        /* MAIN CONTENT */
         .main-content {
             margin-left: 250px;
             padding: 30px;
             width: calc(100% - 250px);
+            background: #f5f5f5;
         }
 
         .header {
@@ -102,14 +235,10 @@
 
         .admin-info {
             text-align: right;
-        }
-
-        .admin-info p {
             font-size: 14px;
             color: #666;
         }
 
-        /* DASHBOARD SECTIONS */
         .section {
             display: none;
         }
@@ -118,48 +247,24 @@
             display: block;
         }
 
-        /* STATS CARDS */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
+        .card {
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border-left: 5px solid #2e7d32;
-        }
-
-        .stat-card h3 {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .stat-card .value {
-            color: #1b5e20;
-            font-size: 32px;
-            font-weight: bold;
-        }
-
-        /* TABLES */
-        .table-container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            overflow-x: auto;
             margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #1b5e20;
+            margin-bottom: 20px;
+            font-size: 20px;
         }
 
         .search-bar {
-            margin-bottom: 20px;
             display: flex;
             gap: 10px;
+            margin-bottom: 20px;
         }
 
         .search-bar input,
@@ -168,9 +273,6 @@
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 14px;
-        }
-
-        .search-bar input {
             flex: 1;
         }
 
@@ -228,54 +330,17 @@
             color: white;
         }
 
-        /* FORMS */
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .btn-submit {
-            background: #2e7d32;
+        .btn-view-password {
+            background: #FF9800;
             color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 14px;
         }
 
-        .btn-submit:hover {
-            background: #1b5e20;
+        .password-display {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
         }
 
         .modal {
@@ -287,19 +352,19 @@
             height: 100%;
             background: rgba(0,0,0,0.5);
             z-index: 1000;
+            align-items: center;
+            justify-content: center;
         }
 
         .modal.active {
             display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .modal-content {
             background: white;
             padding: 30px;
             border-radius: 8px;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
@@ -324,6 +389,28 @@
             color: #999;
         }
 
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-submit {
+            background: #2e7d32;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background: #1b5e20;
+        }
+
         .success-message {
             background: #d4edda;
             color: #155724;
@@ -337,45 +424,12 @@
             display: block;
         }
 
-        .error-message {
-            background: #fdecea;
-            color: #c33;
-            padding: 12px;
+        .restricted {
+            background: #ffe6e6;
+            padding: 10px;
             border-radius: 6px;
-            margin-bottom: 15px;
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
-        }
-
-        .chart-container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-            margin-top: 15px;
-        }
-
-        .pagination button {
-            padding: 6px 12px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .pagination button.active {
-            background: #2e7d32;
-            color: white;
+            color: #c33;
+            margin-top: 20px;
         }
 
         @media (max-width: 768px) {
@@ -394,8 +448,8 @@
                 grid-template-columns: 1fr;
             }
 
-            .stats-grid {
-                grid-template-columns: 1fr;
+            .search-bar {
+                flex-direction: column;
             }
 
             table {
@@ -409,107 +463,126 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- SIDEBAR -->
+    <!-- LOGIN PAGE -->
+    <div class="login-page" id="loginPage">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🎓 FAES MIS</h1>
+                <p>Admin Portal</p>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="adminEmail" placeholder="admin@miu.ac.ug" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="adminPassword" placeholder="Enter your password" required />
+                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility('adminPassword')">👁️</button>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">Login</button>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 10px; color: #666;">Logging in...</p>
+                </div>
+            </form>
+
+            <p style="margin-top: 20px; text-align: center; color: #999; font-size: 12px;">
+                Default password: admin123 (change on first login)
+            </p>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="dashboard" id="dashboard">
         <div class="sidebar">
             <h2>🎓 FAES MIS</h2>
             <ul class="sidebar-menu">
                 <li><a onclick="showSection('dashboard')" class="menu-link active">📊 Dashboard</a></li>
-                <li><a onclick="showSection('students')" class="menu-link">👥 Students</a></li>
+                <li><a onclick="showSection('users')" class="menu-link">👥 Users</a></li>
                 <li><a onclick="showSection('results')" class="menu-link">📈 Results Entry</a></li>
+                <li><a onclick="showSection('students')" class="menu-link">👨‍🎓 All Students</a></li>
                 <li><a onclick="showSection('courses')" class="menu-link">📚 Courses</a></li>
-                <li><a onclick="showSection('staff')" class="menu-link">👨‍🏫 Staff</a></li>
-                <li><a onclick="showSection('reports')" class="menu-link">📄 Reports</a></li>
             </ul>
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
 
-        <!-- MAIN CONTENT -->
         <div class="main-content">
-            <!-- HEADER -->
             <div class="header">
                 <h1>Admin Dashboard</h1>
                 <div class="admin-info">
-                    <p>Welcome, <strong>Administrator</strong></p>
+                    <p>Welcome, <strong id="adminName">Admin</strong></p>
                     <p id="currentTime"></p>
                 </div>
             </div>
 
             <!-- DASHBOARD SECTION -->
             <div id="dashboard" class="section active">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>Total Students</h3>
-                        <div class="value" id="totalStudents">-</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                    <div class="card">
+                        <h3 style="color: #1b5e20; margin-bottom: 10px;">Total Users</h3>
+                        <div style="font-size: 32px; font-weight: bold; color: #2e7d32;" id="totalUsers">-</div>
                     </div>
-                    <div class="stat-card">
-                        <h3>Total Courses</h3>
-                        <div class="value" id="totalCourses">-</div>
+                    <div class="card">
+                        <h3 style="color: #1b5e20; margin-bottom: 10px;">Total Students</h3>
+                        <div style="font-size: 32px; font-weight: bold; color: #2e7d32;" id="totalStudents">-</div>
                     </div>
-                    <div class="stat-card">
-                        <h3>Active Staff</h3>
-                        <div class="value" id="totalStaff">-</div>
+                    <div class="card">
+                        <h3 style="color: #1b5e20; margin-bottom: 10px;">Total Courses</h3>
+                        <div style="font-size: 32px; font-weight: bold; color: #2e7d32;" id="totalCourses">-</div>
                     </div>
-                    <div class="stat-card">
-                        <h3>Programmes</h3>
-                        <div class="value" id="totalProgrammes">-</div>
+                    <div class="card">
+                        <h3 style="color: #1b5e20; margin-bottom: 10px;">Results Entered</h3>
+                        <div style="font-size: 32px; font-weight: bold; color: #2e7d32;" id="totalResults">-</div>
                     </div>
-                </div>
-
-                <div class="chart-container">
-                    <h3>📊 System Overview</h3>
-                    <p style="margin-top: 10px; color: #666;">
-                        Your FAES MIS system is running smoothly with students enrolled across multiple programmes. 
-                        Use the menu to manage students, enter results, and generate reports.
-                    </p>
                 </div>
             </div>
 
-            <!-- STUDENTS SECTION -->
-            <div id="students" class="section">
-                <h2 style="margin-bottom: 20px; color: #1b5e20;">Student Management</h2>
-                
-                <div class="table-container">
+            <!-- USERS SECTION -->
+            <div id="users" class="section">
+                <div class="card">
+                    <h2>User Management</h2>
                     <div class="search-bar">
-                        <input type="text" id="studentSearch" placeholder="Search by name or registration number..." />
-                        <button onclick="searchStudents()">Search</button>
-                        <button onclick="openStudentModal()" style="background: #2e7d32;">+ Add Student</button>
+                        <input type="text" id="userSearch" placeholder="Search by name or email..." />
+                        <button onclick="searchUsers()">Search</button>
                     </div>
 
                     <div class="success-message" id="successMessage"></div>
-                    <div class="error-message" id="errorMessage"></div>
 
                     <table>
                         <thead>
                             <tr>
-                                <th>Reg No</th>
-                                <th>Full Name</th>
-                                <th>Programme</th>
-                                <th>Year</th>
+                                <th>Name</th>
                                 <th>Email</th>
-                                <th>Status</th>
+                                <th>Role</th>
+                                <th>Password</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="studentsTableBody">
-                            <tr><td colspan="7" style="text-align: center; color: #999;">Loading...</td></tr>
+                        <tbody id="usersTableBody">
+                            <tr><td colspan="5" style="text-align: center;">Loading...</td></tr>
                         </tbody>
                     </table>
-                    <div class="pagination" id="studentsPagination"></div>
+
+                    <div class="restricted">
+                        ⚠️ <strong>Note:</strong> You cannot change the Super Admin's password. Only non-super-admin users can be managed.
+                    </div>
                 </div>
             </div>
 
-            <!-- RESULTS ENTRY SECTION -->
+            <!-- RESULTS SECTION -->
             <div id="results" class="section">
-                <h2 style="margin-bottom: 20px; color: #1b5e20;">Results Entry</h2>
-                
-                <div class="table-container">
+                <div class="card">
+                    <h2>Enter Results - All Students</h2>
                     <div class="search-bar">
-                        <select id="resultCourseFilter" onchange="filterResults()" style="flex: 1;">
+                        <select id="resultCourseFilter" onchange="filterResultStudents()" style="flex: 1;">
                             <option value="">Select Course...</option>
-                        </select>
-                        <select id="resultSemesterFilter" onchange="filterResults()" style="flex: 1;">
-                            <option value="">Select Semester...</option>
                         </select>
                         <button onclick="openResultModal()" style="background: #2e7d32;">+ Add Result</button>
                     </div>
@@ -518,15 +591,42 @@
                         <thead>
                             <tr>
                                 <th>Student Name</th>
+                                <th>Reg No</th>
                                 <th>Course</th>
                                 <th>Marks</th>
                                 <th>Grade</th>
-                                <th>GPA</th>
-                                <th>Actions</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody id="resultsTableBody">
-                            <tr><td colspan="6" style="text-align: center; color: #999;">Loading...</td></tr>
+                            <tr><td colspan="6" style="text-align: center;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ALL STUDENTS SECTION -->
+            <div id="students" class="section">
+                <div class="card">
+                    <h2>All Students</h2>
+                    <div class="search-bar">
+                        <input type="text" id="studentSearch" placeholder="Search by name or reg no..." />
+                        <button onclick="searchAllStudents()">Search</button>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Reg No</th>
+                                <th>Name</th>
+                                <th>Programme</th>
+                                <th>Year</th>
+                                <th>Semester</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <tr><td colspan="6" style="text-align: center;">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -534,14 +634,12 @@
 
             <!-- COURSES SECTION -->
             <div id="courses" class="section">
-                <h2 style="margin-bottom: 20px; color: #1b5e20;">Course Management</h2>
-                
-                <div class="table-container">
+                <div class="card">
+                    <h2>All Courses</h2>
                     <div class="search-bar">
-                        <select id="programmeFilter" onchange="filterCourses()" style="flex: 1;">
+                        <select id="courseFilter" onchange="filterCourses()" style="flex: 1;">
                             <option value="">All Programmes</option>
                         </select>
-                        <button onclick="openCourseModal()" style="background: #2e7d32;">+ Add Course</button>
                     </div>
 
                     <table>
@@ -556,73 +654,7 @@
                             </tr>
                         </thead>
                         <tbody id="coursesTableBody">
-                            <tr><td colspan="6" style="text-align: center; color: #999;">Loading...</td></tr>
-                        </tbody>
-                    </table>
-                    <div class="pagination" id="coursesPagination"></div>
-                </div>
-            </div>
-
-            <!-- STAFF SECTION -->
-            <div id="staff" class="section">
-                <h2 style="margin-bottom: 20px; color: #1b5e20;">Staff Management</h2>
-                
-                <div class="table-container">
-                    <div class="search-bar">
-                        <input type="text" id="staffSearch" placeholder="Search by name..." />
-                        <button onclick="searchStaff()">Search</button>
-                    </div>
-
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Staff No</th>
-                                <th>Full Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Teaching Days</th>
-                            </tr>
-                        </thead>
-                        <tbody id="staffTableBody">
-                            <tr><td colspan="5" style="text-align: center; color: #999;">Loading...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- REPORTS SECTION -->
-            <div id="reports" class="section">
-                <h2 style="margin-bottom: 20px; color: #1b5e20;">Reports & Analytics</h2>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>Students per Programme</h3>
-                        <div id="studentsPerProgramme" style="font-size: 14px; margin-top: 10px;"></div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Average GPA</h3>
-                        <div class="value" id="avgGPA">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Total Results Entered</h3>
-                        <div class="value" id="totalResults">-</div>
-                    </div>
-                </div>
-
-                <div class="table-container">
-                    <h3 style="margin-bottom: 15px;">Student Performance Report</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Student Name</th>
-                                <th>Programme</th>
-                                <th>Courses Taken</th>
-                                <th>Average Mark</th>
-                                <th>GPA</th>
-                            </tr>
-                        </thead>
-                        <tbody id="performanceTableBody">
-                            <tr><td colspan="5" style="text-align: center; color: #999;">Loading...</td></tr>
+                            <tr><td colspan="6" style="text-align: center;">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -630,86 +662,66 @@
         </div>
     </div>
 
-    <!-- MODALS -->
-    <div id="studentModal" class="modal">
+    <!-- CHANGE PASSWORD MODAL -->
+    <div id="changePasswordModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Add/Edit Student</h2>
-                <button class="close-btn" onclick="closeStudentModal()">&times;</button>
+                <h2>Change User Password</h2>
+                <button class="close-btn" onclick="closeChangePasswordModal()">&times;</button>
             </div>
-            <form id="studentForm" onsubmit="saveStudent(event)">
+
+            <div class="success-message" id="pwdSuccessMessage"></div>
+            <div style="display: none; background: #fdecea; color: #c33; padding: 12px; border-radius: 6px; margin-bottom: 15px;" id="pwdErrorMessage"></div>
+
+            <form id="changePasswordForm" onsubmit="saveNewPassword(event)">
                 <div class="form-group">
-                    <label>Registration Number</label>
-                    <input type="text" id="regNo" required />
+                    <label>User Name</label>
+                    <input type="text" id="pwdUserName" readonly style="background: #f5f5f5;" />
                 </div>
+
                 <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" id="fullName" required />
+                    <label>Email</label>
+                    <input type="email" id="pwdUserEmail" readonly style="background: #f5f5f5;" />
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="studentEmail" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Phone</label>
-                        <input type="tel" id="phone" required />
-                    </div>
+
+                <div class="form-group">
+                    <label>New Password (min 6 characters)</label>
+                    <input type="text" id="newPassword" minlength="6" required />
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Programme</label>
-                        <select id="programmeId" required></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Gender</label>
-                        <select id="gender" required>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Year of Study</label>
-                        <select id="yearOfStudy" required>
-                            <option value="1">Year 1</option>
-                            <option value="2">Year 2</option>
-                            <option value="3">Year 3</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Current Semester</label>
-                        <select id="semester" required>
-                            <option value="1">Semester 1</option>
-                            <option value="2">Semester 2</option>
-                        </select>
-                    </div>
-                </div>
-                <button type="submit" class="btn-submit">Save Student</button>
+
+                <input type="hidden" id="pwdUserId" />
+
+                <button type="submit" class="btn-submit">Change Password</button>
             </form>
         </div>
     </div>
 
+    <!-- RESULT ENTRY MODAL -->
     <div id="resultModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Add/Edit Result</h2>
+                <h2>Enter Student Result</h2>
                 <button class="close-btn" onclick="closeResultModal()">&times;</button>
             </div>
+
+            <div class="success-message" id="resultSuccessMessage"></div>
+            <div style="display: none; background: #fdecea; color: #c33; padding: 12px; border-radius: 6px; margin-bottom: 15px;" id="resultErrorMessage"></div>
+
             <form id="resultForm" onsubmit="saveResult(event)">
                 <div class="form-group">
                     <label>Student</label>
-                    <select id="studentId" required></select>
+                    <select id="resultStudent" required></select>
                 </div>
+
                 <div class="form-group">
                     <label>Course</label>
-                    <select id="courseId" required></select>
+                    <select id="resultCourse" required></select>
                 </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Marks (0-100)</label>
-                        <input type="number" id="marks" min="0" max="100" required />
+                        <input type="number" id="resultMarks" min="0" max="100" required />
                     </div>
                     <div class="form-group">
                         <label>Semester</label>
@@ -719,6 +731,7 @@
                         </select>
                     </div>
                 </div>
+
                 <button type="submit" class="btn-submit">Save Result</button>
             </form>
         </div>
@@ -729,107 +742,189 @@
         const SUPABASE_KEY = 'sb_publishable_BR3NxW8vuJSOhrwbDHjNJA_NqmmQPbG';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        let currentAdmin = null;
+        let allStaff = [];
         let allStudents = [];
         let allCourses = [];
-        let allStaff = [];
-        let allProgrammes = [];
         let allResults = [];
+        let allProgrammes = [];
 
-        // Initialize
-        window.addEventListener('load', async () => {
+        // LOGIN HANDLER
+        async function handleLogin(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+
+            document.getElementById('errorMessage').classList.remove('show');
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('loginBtn').disabled = true;
+
+            try {
+                const { data: staff, error } = await supabase
+                    .from('staff')
+                    .select('*')
+                    .eq('email', email);
+
+                if (error) throw error;
+
+                if (!staff || staff.length === 0) {
+                    throw new Error('Email not found');
+                }
+
+                const adminUser = staff[0];
+
+                // Check role
+                if (adminUser.role !== 'admin' && adminUser.role !== 'super_admin') {
+                    throw new Error('Only admins can access this portal');
+                }
+
+                // Simple password check (demo)
+                if (adminUser.password_hash && adminUser.password_hash !== password) {
+                    throw new Error('Invalid password');
+                }
+
+                currentAdmin = adminUser;
+                localStorage.setItem('adminData', JSON.stringify(adminUser));
+                await loadDashboard();
+            } catch (error) {
+                document.getElementById('errorMessage').textContent = error.message;
+                document.getElementById('errorMessage').classList.add('show');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('loginBtn').disabled = false;
+            }
+        }
+
+        async function loadDashboard() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            document.getElementById('adminName').textContent = currentAdmin.full_name;
+
             await loadAllData();
             updateClock();
             setInterval(updateClock, 1000);
-        });
+        }
 
         async function loadAllData() {
             try {
-                // Load students
-                const { data: students } = await supabase.from('students').select('*');
-                allStudents = students || [];
-
-                // Load courses
-                const { data: courses } = await supabase.from('courses').select('*');
-                allCourses = courses || [];
-
-                // Load staff
                 const { data: staff } = await supabase.from('staff').select('*');
                 allStaff = staff || [];
 
-                // Load programmes
-                const { data: programmes } = await supabase.from('programmes').select('*');
-                allProgrammes = programmes || [];
+                const { data: students } = await supabase.from('students').select('*');
+                allStudents = students || [];
 
-                // Load results
+                const { data: courses } = await supabase.from('courses').select('*');
+                allCourses = courses || [];
+
                 const { data: results } = await supabase.from('results').select('*');
                 allResults = results || [];
 
-                // Update dashboard
+                const { data: programmes } = await supabase.from('programmes').select('*');
+                allProgrammes = programmes || [];
+
+                // Update dashboard stats
+                document.getElementById('totalUsers').textContent = allStaff.length;
                 document.getElementById('totalStudents').textContent = allStudents.length;
                 document.getElementById('totalCourses').textContent = allCourses.length;
-                document.getElementById('totalStaff').textContent = allStaff.length;
-                document.getElementById('totalProgrammes').textContent = allProgrammes.length;
+                document.getElementById('totalResults').textContent = allResults.length;
 
-                // Populate dropdowns
-                populateProgrammeDropdowns();
-                populateStudentDropdowns();
-                populateCourseDropdowns();
-
-                // Load tables
+                loadUsersTable();
                 loadStudentsTable();
                 loadCoursesTable();
-                loadStaffTable();
                 loadResultsTable();
-                loadReports();
+                populateDropdowns();
             } catch (error) {
                 console.error('Error loading data:', error);
             }
         }
 
-        function populateProgrammeDropdowns() {
-            const selects = document.querySelectorAll('#programmeId, #programmeFilter, #resultCourseFilter');
-            selects.forEach(select => {
-                if (select.id === 'programmeFilter' || select.id === 'resultCourseFilter') return;
-                select.innerHTML = '<option value="">Select Programme</option>';
-                allProgrammes.forEach(prog => {
-                    select.innerHTML += `<option value="${prog.id}">${prog.code}</option>`;
-                });
+        function loadUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+
+            allStaff.forEach(staff => {
+                const isSuper = staff.role === 'super_admin';
+                const disabled = isSuper;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${staff.full_name}</td>
+                        <td>${staff.email}</td>
+                        <td><span style="background: #d1ecf1; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${staff.role}</span></td>
+                        <td>
+                            <span class="password-display">${staff.password_hash ? '••••••••' : 'Not set'}</span>
+                            <button type="button" class="btn-small btn-view-password" onclick="togglePasswordView(this, '${staff.password_hash || 'Not set'}')" style="margin-left: 5px;">👁️</button>
+                        </td>
+                        <td>
+                            ${!disabled ? `<button class="btn-small btn-edit" onclick="openChangePasswordModal(${staff.id}, '${staff.full_name}', '${staff.email}')">Change Password</button>` : '<span style="color: #999; font-size: 12px;">Cannot modify</span>'}
+                        </td>
+                    </tr>
+                `;
             });
+        }
 
-            const filterSelect = document.getElementById('programmeFilter');
-            if (filterSelect) {
-                filterSelect.innerHTML = '<option value="">All Programmes</option>';
-                allProgrammes.forEach(prog => {
-                    filterSelect.innerHTML += `<option value="${prog.id}">${prog.code}</option>`;
-                });
+        function togglePasswordView(button, password) {
+            if (button.textContent === '👁️') {
+                button.textContent = '🙈';
+                const row = button.closest('tr');
+                const span = row.querySelector('.password-display');
+                span.textContent = password;
+            } else {
+                button.textContent = '👁️';
+                const row = button.closest('tr');
+                const span = row.querySelector('.password-display');
+                span.textContent = password === 'Not set' ? 'Not set' : '••••••••';
             }
         }
 
-        function populateStudentDropdowns() {
-            const select = document.getElementById('studentId');
-            if (select) {
-                select.innerHTML = '<option value="">Select Student</option>';
-                allStudents.forEach(student => {
-                    select.innerHTML += `<option value="${student.id}">${student.full_name} (${student.reg_no})</option>`;
-                });
+        function togglePasswordVisibility(fieldId) {
+            const field = document.getElementById(fieldId);
+            if (field.type === 'password') {
+                field.type = 'text';
+            } else {
+                field.type = 'password';
             }
         }
 
-        function populateCourseDropdowns() {
-            const select = document.getElementById('courseId');
-            if (select) {
-                select.innerHTML = '<option value="">Select Course</option>';
-                allCourses.forEach(course => {
-                    select.innerHTML += `<option value="${course.id}">${course.code} - ${course.title}</option>`;
-                });
-            }
+        function openChangePasswordModal(staffId, name, email) {
+            document.getElementById('pwdUserId').value = staffId;
+            document.getElementById('pwdUserName').value = name;
+            document.getElementById('pwdUserEmail').value = email;
+            document.getElementById('newPassword').value = '';
+            document.getElementById('changePasswordModal').classList.add('active');
+            document.getElementById('pwdSuccessMessage').classList.remove('show');
+            document.getElementById('pwdErrorMessage').style.display = 'none';
+        }
 
-            const filterSelect = document.getElementById('resultCourseFilter');
-            if (filterSelect) {
-                filterSelect.innerHTML = '<option value="">Select Course...</option>';
-                allCourses.forEach(course => {
-                    filterSelect.innerHTML += `<option value="${course.id}">${course.code}</option>`;
-                });
+        function closeChangePasswordModal() {
+            document.getElementById('changePasswordModal').classList.remove('active');
+        }
+
+        async function saveNewPassword(e) {
+            e.preventDefault();
+
+            const staffId = parseInt(document.getElementById('pwdUserId').value);
+            const newPassword = document.getElementById('newPassword').value;
+
+            try {
+                const { error } = await supabase
+                    .from('staff')
+                    .update({ password_hash: newPassword })
+                    .eq('id', staffId);
+
+                if (error) throw error;
+
+                document.getElementById('pwdSuccessMessage').textContent = 'Password changed successfully!';
+                document.getElementById('pwdSuccessMessage').classList.add('show');
+
+                setTimeout(() => {
+                    closeChangePasswordModal();
+                    loadUsersTable();
+                }, 1500);
+            } catch (error) {
+                document.getElementById('pwdErrorMessage').textContent = 'Error: ' + error.message;
+                document.getElementById('pwdErrorMessage').style.display = 'block';
             }
         }
 
@@ -838,18 +933,15 @@
             tbody.innerHTML = '';
 
             allStudents.forEach(student => {
-                const programme = allProgrammes.find(p => p.id === student.programme_id);
+                const prog = allProgrammes.find(p => p.id === student.programme_id);
                 tbody.innerHTML += `
                     <tr>
                         <td>${student.reg_no}</td>
                         <td>${student.full_name}</td>
-                        <td>${programme ? programme.code : 'N/A'}</td>
+                        <td>${prog ? prog.code : 'N/A'}</td>
                         <td>Year ${student.year_of_study}</td>
-                        <td>${student.email || 'N/A'}</td>
+                        <td>Semester ${student.semester}</td>
                         <td><span style="background: #d4edda; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${student.status}</span></td>
-                        <td>
-                            <button class="btn-small btn-edit" onclick="editStudent(${student.id})">Edit</button>
-                        </td>
                     </tr>
                 `;
             });
@@ -859,33 +951,16 @@
             const tbody = document.getElementById('coursesTableBody');
             tbody.innerHTML = '';
 
-            allCourses.slice(0, 10).forEach(course => {
-                const programme = allProgrammes.find(p => p.id === course.programme_id);
+            allCourses.slice(0, 20).forEach(course => {
+                const prog = allProgrammes.find(p => p.id === course.programme_id);
                 tbody.innerHTML += `
                     <tr>
                         <td>${course.code}</td>
                         <td>${course.title}</td>
-                        <td>${programme ? programme.code : 'N/A'}</td>
+                        <td>${prog ? prog.code : 'N/A'}</td>
                         <td>${course.credit_units}</td>
                         <td>${course.lecture_hours || 0}</td>
                         <td>${course.practical_hours || 0}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        function loadStaffTable() {
-            const tbody = document.getElementById('staffTableBody');
-            tbody.innerHTML = '';
-
-            allStaff.forEach(staff => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${staff.staff_no}</td>
-                        <td>${staff.full_name}</td>
-                        <td>${staff.email || 'N/A'}</td>
-                        <td><span style="background: #d1ecf1; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${staff.role}</span></td>
-                        <td>${staff.teaching_days || 'N/A'}</td>
                     </tr>
                 `;
             });
@@ -895,68 +970,195 @@
             const tbody = document.getElementById('resultsTableBody');
             tbody.innerHTML = '';
 
-            allResults.slice(0, 20).forEach(result => {
+            allResults.forEach(result => {
                 const student = allStudents.find(s => s.id === result.student_id);
                 const course = allCourses.find(c => c.id === result.course_id);
-                
+
                 tbody.innerHTML += `
                     <tr>
                         <td>${student ? student.full_name : 'Unknown'}</td>
+                        <td>${student ? student.reg_no : 'N/A'}</td>
                         <td>${course ? course.code : 'Unknown'}</td>
                         <td>${result.marks ? result.marks.toFixed(2) : 'N/A'}</td>
                         <td>${result.letter_grade || 'N/A'}</td>
-                        <td>${result.gpa_points || 'N/A'}</td>
+                        <td><button class="btn-small btn-edit" onclick="editResult(${result.id})">Edit</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function populateDropdowns() {
+            const courseSelect = document.getElementById('resultCourseFilter');
+            courseSelect.innerHTML = '<option value="">Select Course...</option>';
+            allCourses.forEach(course => {
+                courseSelect.innerHTML += `<option value="${course.id}">${course.code} - ${course.title}</option>`;
+            });
+
+            const studentSelect = document.getElementById('resultStudent');
+            studentSelect.innerHTML = '<option value="">Select Student</option>';
+            allStudents.forEach(student => {
+                studentSelect.innerHTML += `<option value="${student.id}">${student.full_name} (${student.reg_no})</option>`;
+            });
+
+            const courseSelect2 = document.getElementById('resultCourse');
+            courseSelect2.innerHTML = '<option value="">Select Course</option>';
+            allCourses.forEach(course => {
+                courseSelect2.innerHTML += `<option value="${course.id}">${course.code} - ${course.title}</option>`;
+            });
+
+            const progFilter = document.getElementById('courseFilter');
+            progFilter.innerHTML = '<option value="">All Programmes</option>';
+            allProgrammes.forEach(prog => {
+                progFilter.innerHTML += `<option value="${prog.id}">${prog.code}</option>`;
+            });
+        }
+
+        function openResultModal() {
+            document.getElementById('resultModal').classList.add('active');
+        }
+
+        function closeResultModal() {
+            document.getElementById('resultModal').classList.remove('active');
+            document.getElementById('resultForm').reset();
+        }
+
+        async function saveResult(e) {
+            e.preventDefault();
+
+            const marks = parseFloat(document.getElementById('resultMarks').value);
+            let letterGrade = 'F';
+            let gpaPoints = 0;
+
+            if (marks >= 80) { letterGrade = 'A'; gpaPoints = 5.0; }
+            else if (marks >= 75) { letterGrade = 'B+'; gpaPoints = 4.5; }
+            else if (marks >= 70) { letterGrade = 'B'; gpaPoints = 4.0; }
+            else if (marks >= 65) { letterGrade = 'C+'; gpaPoints = 3.5; }
+            else if (marks >= 60) { letterGrade = 'C'; gpaPoints = 3.0; }
+            else if (marks >= 55) { letterGrade = 'D+'; gpaPoints = 2.5; }
+            else if (marks >= 50) { letterGrade = 'D'; gpaPoints = 2.0; }
+
+            try {
+                const { error } = await supabase.from('results').insert([{
+                    student_id: parseInt(document.getElementById('resultStudent').value),
+                    course_id: parseInt(document.getElementById('resultCourse').value),
+                    marks: marks,
+                    letter_grade: letterGrade,
+                    gpa_points: gpaPoints,
+                    semester_id: parseInt(document.getElementById('resultSemester').value)
+                }]);
+
+                if (error) throw error;
+
+                document.getElementById('resultSuccessMessage').textContent = 'Result saved successfully!';
+                document.getElementById('resultSuccessMessage').classList.add('show');
+
+                setTimeout(() => {
+                    closeResultModal();
+                    loadAllData();
+                }, 1500);
+            } catch (error) {
+                document.getElementById('resultErrorMessage').textContent = 'Error: ' + error.message;
+                document.getElementById('resultErrorMessage').style.display = 'block';
+            }
+        }
+
+        function filterResultStudents() {
+            const courseId = document.getElementById('resultCourseFilter').value;
+            const tbody = document.getElementById('resultsTableBody');
+            tbody.innerHTML = '';
+
+            let filtered = allResults;
+            if (courseId) {
+                filtered = allResults.filter(r => r.course_id === parseInt(courseId));
+            }
+
+            filtered.forEach(result => {
+                const student = allStudents.find(s => s.id === result.student_id);
+                const course = allCourses.find(c => c.id === result.course_id);
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${student ? student.full_name : 'Unknown'}</td>
+                        <td>${student ? student.reg_no : 'N/A'}</td>
+                        <td>${course ? course.code : 'Unknown'}</td>
+                        <td>${result.marks ? result.marks.toFixed(2) : 'N/A'}</td>
+                        <td>${result.letter_grade || 'N/A'}</td>
+                        <td><button class="btn-small btn-edit" onclick="editResult(${result.id})">Edit</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function searchUsers() {
+            const query = document.getElementById('userSearch').value.toLowerCase();
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+
+            allStaff.filter(s => 
+                s.full_name.toLowerCase().includes(query) || 
+                s.email.toLowerCase().includes(query)
+            ).forEach(staff => {
+                const isSuper = staff.role === 'super_admin';
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${staff.full_name}</td>
+                        <td>${staff.email}</td>
+                        <td><span style="background: #d1ecf1; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${staff.role}</span></td>
                         <td>
-                            <button class="btn-small btn-edit" onclick="editResult(${result.id})">Edit</button>
+                            <span class="password-display">${staff.password_hash ? '••••••••' : 'Not set'}</span>
+                            <button type="button" class="btn-small btn-view-password" onclick="togglePasswordView(this, '${staff.password_hash || 'Not set'}')" style="margin-left: 5px;">👁️</button>
+                        </td>
+                        <td>
+                            ${!isSuper ? `<button class="btn-small btn-edit" onclick="openChangePasswordModal(${staff.id}, '${staff.full_name}', '${staff.email}')">Change Password</button>` : '<span style="color: #999; font-size: 12px;">Cannot modify</span>'}
                         </td>
                     </tr>
                 `;
             });
         }
 
-        function loadReports() {
-            // Students per programme
-            let programmeSummary = '';
-            allProgrammes.forEach(prog => {
-                const count = allStudents.filter(s => s.programme_id === prog.id).length;
-                programmeSummary += `<p>${prog.code}: ${count} students</p>`;
-            });
-            document.getElementById('studentsPerProgramme').innerHTML = programmeSummary || '<p>No data</p>';
-
-            // Total results
-            document.getElementById('totalResults').textContent = allResults.length;
-
-            // Average GPA
-            if (allResults.length > 0) {
-                const avgGPA = (allResults.reduce((sum, r) => sum + (r.gpa_points || 0), 0) / allResults.length).toFixed(2);
-                document.getElementById('avgGPA').textContent = avgGPA;
-            }
-
-            // Performance report
-            loadPerformanceReport();
-        }
-
-        function loadPerformanceReport() {
-            const tbody = document.getElementById('performanceTableBody');
+        function searchAllStudents() {
+            const query = document.getElementById('studentSearch').value.toLowerCase();
+            const tbody = document.getElementById('studentsTableBody');
             tbody.innerHTML = '';
 
-            allStudents.slice(0, 10).forEach(student => {
-                const programme = allProgrammes.find(p => p.id === student.programme_id);
-                const studentResults = allResults.filter(r => r.student_id === student.id);
-                const avgMark = studentResults.length > 0 
-                    ? (studentResults.reduce((sum, r) => sum + (r.marks || 0), 0) / studentResults.length).toFixed(2)
-                    : 'N/A';
-                const avgGPA = studentResults.length > 0
-                    ? (studentResults.reduce((sum, r) => sum + (r.gpa_points || 0), 0) / studentResults.length).toFixed(2)
-                    : 'N/A';
-
+            allStudents.filter(s =>
+                s.full_name.toLowerCase().includes(query) ||
+                s.reg_no.toLowerCase().includes(query)
+            ).forEach(student => {
+                const prog = allProgrammes.find(p => p.id === student.programme_id);
                 tbody.innerHTML += `
                     <tr>
+                        <td>${student.reg_no}</td>
                         <td>${student.full_name}</td>
-                        <td>${programme ? programme.code : 'N/A'}</td>
-                        <td>${studentResults.length}</td>
-                        <td>${avgMark}</td>
-                        <td>${avgGPA}</td>
+                        <td>${prog ? prog.code : 'N/A'}</td>
+                        <td>Year ${student.year_of_study}</td>
+                        <td>Semester ${student.semester}</td>
+                        <td><span style="background: #d4edda; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${student.status}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterCourses() {
+            const progId = document.getElementById('courseFilter').value;
+            const tbody = document.getElementById('coursesTableBody');
+            tbody.innerHTML = '';
+
+            let filtered = allCourses;
+            if (progId) {
+                filtered = allCourses.filter(c => c.programme_id === parseInt(progId));
+            }
+
+            filtered.forEach(course => {
+                const prog = allProgrammes.find(p => p.id === course.programme_id);
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${course.code}</td>
+                        <td>${course.title}</td>
+                        <td>${prog ? prog.code : 'N/A'}</td>
+                        <td>${course.credit_units}</td>
+                        <td>${course.lecture_hours || 0}</td>
+                        <td>${course.practical_hours || 0}</td>
                     </tr>
                 `;
             });
@@ -970,198 +1172,6 @@
             event.target.classList.add('active');
         }
 
-        function openStudentModal() {
-            document.getElementById('studentModal').classList.add('active');
-        }
-
-        function closeStudentModal() {
-            document.getElementById('studentModal').classList.remove('active');
-            document.getElementById('studentForm').reset();
-        }
-
-        function openResultModal() {
-            document.getElementById('resultModal').classList.add('active');
-        }
-
-        function closeResultModal() {
-            document.getElementById('resultModal').classList.remove('active');
-            document.getElementById('resultForm').reset();
-        }
-
-        async function saveStudent(e) {
-            e.preventDefault();
-            
-            try {
-                const newStudent = {
-                    reg_no: document.getElementById('regNo').value,
-                    full_name: document.getElementById('fullName').value,
-                    email: document.getElementById('studentEmail').value,
-                    phone: document.getElementById('phone').value,
-                    programme_id: parseInt(document.getElementById('programmeId').value),
-                    gender: document.getElementById('gender').value,
-                    year_of_study: parseInt(document.getElementById('yearOfStudy').value),
-                    semester: parseInt(document.getElementById('semester').value),
-                    enrollment_year: new Date().getFullYear(),
-                    status: 'active'
-                };
-
-                const { data, error } = await supabase.from('students').insert([newStudent]);
-                
-                if (error) throw error;
-
-                showMessage('Student added successfully!', 'success');
-                closeStudentModal();
-                await loadAllData();
-            } catch (error) {
-                showMessage('Error saving student: ' + error.message, 'error');
-            }
-        }
-
-        async function saveResult(e) {
-            e.preventDefault();
-
-            try {
-                const marks = parseFloat(document.getElementById('marks').value);
-                let letterGrade = 'F';
-                let gpaPoints = 0;
-
-                if (marks >= 80) { letterGrade = 'A'; gpaPoints = 5.0; }
-                else if (marks >= 75) { letterGrade = 'B+'; gpaPoints = 4.5; }
-                else if (marks >= 70) { letterGrade = 'B'; gpaPoints = 4.0; }
-                else if (marks >= 65) { letterGrade = 'C+'; gpaPoints = 3.5; }
-                else if (marks >= 60) { letterGrade = 'C'; gpaPoints = 3.0; }
-                else if (marks >= 55) { letterGrade = 'D+'; gpaPoints = 2.5; }
-                else if (marks >= 50) { letterGrade = 'D'; gpaPoints = 2.0; }
-
-                const newResult = {
-                    student_id: parseInt(document.getElementById('studentId').value),
-                    course_id: parseInt(document.getElementById('courseId').value),
-                    marks: marks,
-                    letter_grade: letterGrade,
-                    gpa_points: gpaPoints,
-                    semester_id: parseInt(document.getElementById('resultSemester').value),
-                    is_published: false
-                };
-
-                const { error } = await supabase.from('results').insert([newResult]);
-                
-                if (error) throw error;
-
-                showMessage('Result added successfully!', 'success');
-                closeResultModal();
-                await loadAllData();
-            } catch (error) {
-                showMessage('Error saving result: ' + error.message, 'error');
-            }
-        }
-
-        function searchStudents() {
-            const query = document.getElementById('studentSearch').value.toLowerCase();
-            const filtered = allStudents.filter(s => 
-                s.full_name.toLowerCase().includes(query) || 
-                s.reg_no.toLowerCase().includes(query)
-            );
-
-            const tbody = document.getElementById('studentsTableBody');
-            tbody.innerHTML = '';
-
-            filtered.forEach(student => {
-                const programme = allProgrammes.find(p => p.id === student.programme_id);
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${student.reg_no}</td>
-                        <td>${student.full_name}</td>
-                        <td>${programme ? programme.code : 'N/A'}</td>
-                        <td>Year ${student.year_of_study}</td>
-                        <td>${student.email || 'N/A'}</td>
-                        <td><span style="background: #d4edda; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${student.status}</span></td>
-                        <td>
-                            <button class="btn-small btn-edit">Edit</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function filterCourses() {
-            const progId = document.getElementById('programmeFilter').value;
-            const filtered = progId ? allCourses.filter(c => c.programme_id === parseInt(progId)) : allCourses;
-
-            const tbody = document.getElementById('coursesTableBody');
-            tbody.innerHTML = '';
-
-            filtered.slice(0, 10).forEach(course => {
-                const programme = allProgrammes.find(p => p.id === course.programme_id);
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${course.code}</td>
-                        <td>${course.title}</td>
-                        <td>${programme ? programme.code : 'N/A'}</td>
-                        <td>${course.credit_units}</td>
-                        <td>${course.lecture_hours || 0}</td>
-                        <td>${course.practical_hours || 0}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        function filterResults() {
-            let filtered = allResults;
-
-            const courseId = document.getElementById('resultCourseFilter').value;
-            if (courseId) {
-                filtered = filtered.filter(r => r.course_id === parseInt(courseId));
-            }
-
-            const tbody = document.getElementById('resultsTableBody');
-            tbody.innerHTML = '';
-
-            filtered.slice(0, 20).forEach(result => {
-                const student = allStudents.find(s => s.id === result.student_id);
-                const course = allCourses.find(c => c.id === result.course_id);
-                
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${student ? student.full_name : 'Unknown'}</td>
-                        <td>${course ? course.code : 'Unknown'}</td>
-                        <td>${result.marks ? result.marks.toFixed(2) : 'N/A'}</td>
-                        <td>${result.letter_grade || 'N/A'}</td>
-                        <td>${result.gpa_points || 'N/A'}</td>
-                        <td>
-                            <button class="btn-small btn-edit">Edit</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function searchStaff() {
-            const query = document.getElementById('staffSearch').value.toLowerCase();
-            const filtered = allStaff.filter(s => s.full_name.toLowerCase().includes(query));
-
-            const tbody = document.getElementById('staffTableBody');
-            tbody.innerHTML = '';
-
-            filtered.forEach(staff => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${staff.staff_no}</td>
-                        <td>${staff.full_name}</td>
-                        <td>${staff.email || 'N/A'}</td>
-                        <td><span style="background: #d1ecf1; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${staff.role}</span></td>
-                        <td>${staff.teaching_days || 'N/A'}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        function showMessage(message, type) {
-            const element = document.getElementById(type === 'success' ? 'successMessage' : 'errorMessage');
-            element.textContent = message;
-            element.classList.add('show');
-            setTimeout(() => element.classList.remove('show'), 3000);
-        }
-
         function updateClock() {
             const now = new Date();
             document.getElementById('currentTime').textContent = now.toLocaleTimeString();
@@ -1169,9 +1179,22 @@
 
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
-                window.location.href = 'https://faes-mis.github.io/faes-mis-frontend';
+                localStorage.removeItem('adminData');
+                currentAdmin = null;
+                document.getElementById('loginPage').style.display = 'flex';
+                document.getElementById('dashboard').classList.remove('active');
+                document.getElementById('loginForm').reset();
             }
         }
+
+        // Check if already logged in
+        window.addEventListener('load', () => {
+            const adminData = localStorage.getItem('adminData');
+            if (adminData) {
+                currentAdmin = JSON.parse(adminData);
+                loadDashboard();
+            }
+        });
     </script>
 </body>
 </html>

@@ -853,8 +853,10 @@
                         <td>${staff.email}</td>
                         <td><span style="background: #d1ecf1; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${staff.role}</span></td>
                         <td>
-                            <span class="password-display">${staff.password_hash ? '••••••••' : 'Not set'}</span>
-                            <button type="button" class="btn-small btn-view-password" onclick="togglePasswordView(this, '${staff.password_hash || 'Not set'}')" style="margin-left: 5px;">👁️</button>
+                            ${!isSuper ? `
+                                <span class="password-display">${staff.password_hash ? '••••••••' : 'Not set'}</span>
+                                <button type="button" class="btn-small btn-view-password" onclick="togglePasswordView(this, '${staff.password_hash || 'Not set'}')" style="margin-left: 5px;">👁️</button>
+                            ` : '<span style="color: #999; font-size: 12px;">Protected</span>'}
                         </td>
                         <td>
                             ${!disabled ? `<button class="btn-small btn-edit" onclick="openChangePasswordModal(${staff.id}, '${staff.full_name}', '${staff.email}')">Change Password</button>` : '<span style="color: #999; font-size: 12px;">Cannot modify</span>'}
@@ -1105,8 +1107,10 @@
                         <td>${staff.email}</td>
                         <td><span style="background: #d1ecf1; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${staff.role}</span></td>
                         <td>
-                            <span class="password-display">${staff.password_hash ? '••••••••' : 'Not set'}</span>
-                            <button type="button" class="btn-small btn-view-password" onclick="togglePasswordView(this, '${staff.password_hash || 'Not set'}')" style="margin-left: 5px;">👁️</button>
+                            ${!isSuper ? `
+                                <span class="password-display">${staff.password_hash ? '••••••••' : 'Not set'}</span>
+                                <button type="button" class="btn-small btn-view-password" onclick="togglePasswordView(this, '${staff.password_hash || 'Not set'}')" style="margin-left: 5px;">👁️</button>
+                            ` : '<span style="color: #999; font-size: 12px;">Protected</span>'}
                         </td>
                         <td>
                             ${!isSuper ? `<button class="btn-small btn-edit" onclick="openChangePasswordModal(${staff.id}, '${staff.full_name}', '${staff.email}')">Change Password</button>` : '<span style="color: #999; font-size: 12px;">Cannot modify</span>'}
